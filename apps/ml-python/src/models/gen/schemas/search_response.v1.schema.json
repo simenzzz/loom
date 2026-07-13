@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://loom.dev/schemas/search_response.v1.schema.json",
+  "title": "SearchResponseV1",
+  "description": "Response body of loom-server GET /search. The web app validates this with AJV before rendering.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "query", "vertical", "took_ms", "degraded", "total", "results"],
+  "properties": {
+    "schema": {
+      "description": "Contract discriminator, always search_response.v1",
+      "const": "search_response.v1"
+    },
+    "query": {
+      "description": "The query as executed (post-normalization)",
+      "type": "string",
+      "maxLength": 512
+    },
+    "vertical": {
+      "description": "Vertical pack id that was searched",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "took_ms": {
+      "description": "Server-side query latency in milliseconds",
+      "type": "number",
+      "minimum": 0
+    },
+    "degraded": {
+      "description": "True when the ML sidecar was unavailable and the vector/LLM legs were skipped (BM25-only)",
+      "type": "boolean"
+    },
+    "total": {
+      "description": "Total matching documents (may be an upper-bound estimate once WAND lands)",
+      "type": "integer",
+      "minimum": 0
+    },
+    "results": {
+      "description": "Ranked results, best first",
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rank", "url", "title", "snippet", "score"],
+        "properties": {
+          "rank": {
+            "description": "1-based rank within this response page",
+            "type": "integer",
+            "minimum": 1
+          },
+          "url": {
+            "description": "Canonical document URL",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 4096
+          },
+          "title": {
+            "description": "Document title (extracted)",
+            "type": "string",
+            "maxLength": 512
+          },
+          "snippet": {
+            "description": "Best passage with query terms wrapped in ▌▐ marker pair for highlighting",
+            "type": "string",
+            "maxLength": 1024
+          },
+          "score": {
+            "description": "Final ranking score (monotonically decreasing with rank)",
+            "type": "number"
+          }
+        }
+      }
+    },
+    "suggestion": {
+      "description": "Optional did-you-mean rewrite when the query looks misspelled (P4)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": {
+          "description": "Suggested corrected query",
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    }
+  }
+}

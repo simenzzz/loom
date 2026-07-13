@@ -1,0 +1,12 @@
+[package]
+name = "loom-indexer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Offline index builder: crawl segments -> index build dir (lands in P1)"
+
+[dependencies]
+loom-contracts.workspace = true
+
+[lints]
+workspace = true

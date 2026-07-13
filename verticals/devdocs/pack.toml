@@ -1,0 +1,14 @@
+# Vertical pack: developer documentation (v1 vertical)
+[pack]
+id = "devdocs"
+name = "Developer Docs"
+tab_label = "Docs"
+
+# Field weights consumed by ranking from P5 onward. Changing these must never
+# require a code change (that is the pack-plugin claim, proven in P9).
+[ranking]
+title_weight = 2.5
+body_weight = 1.0
+code_weight = 0.8
+anchor_weight = 1.5
+recency_half_life_days = 0 # docs don't decay; news packs set this

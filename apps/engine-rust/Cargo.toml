@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/loom-contracts",
+    "crates/loom-server",
+    "bins/loom-indexer",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+loom-contracts = { path = "crates/loom-contracts" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+regress = "0.10"
+jsonschema = { version = "0.33", default-features = false }
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "net"] }
+thiserror = "2"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"

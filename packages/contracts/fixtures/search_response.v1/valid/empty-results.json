@@ -1,0 +1,9 @@
+{
+  "schema": "search_response.v1",
+  "query": "xyzzy plugh",
+  "vertical": "devdocs",
+  "took_ms": 1.4,
+  "degraded": false,
+  "total": 0,
+  "results": []
+}

@@ -1,0 +1,7 @@
+{
+  "schema": "search_request.v1",
+  "query": "\"dynamically typed\" language:javascript",
+  "vertical": "devdocs",
+  "offset": 10,
+  "limit": 10
+}

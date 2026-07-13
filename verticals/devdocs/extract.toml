@@ -1,0 +1,9 @@
+# Extractor hints for the devdocs vertical, applied on top of the generic
+# text-density algorithm (P3). Selectors narrow where main content lives.
+[content]
+main_selectors = ["main", "article", "#content"]
+title_selectors = ["h1", "title"]
+
+[code]
+# Code blocks are indexed as a separate field with their own BM25 weight
+preserve_selectors = ["pre", "code"]

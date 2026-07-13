@@ -1,0 +1,34 @@
+# Data artifacts (crawl segments, index builds, sqlite) — never committed
+data/
+
+# Environment
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Rust
+target/
+
+# Go
+apps/crawler-go/bin/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+
+# Editors / OS
+.DS_Store
+*.swp
+
+# Eval outputs are committed selectively: baselines/ yes, raw results/ yes (append-only),
+# but scratch bench artifacts no
+eval/results/*.tmp

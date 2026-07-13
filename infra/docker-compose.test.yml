@@ -1,0 +1,32 @@
+# Isolated E2E environment. P0 smoke: every service answers /healthz and the
+# fixture site serves the P1 exit-criterion page. P1 replaces the e2e script
+# with the full crawl -> index -> search loop.
+name: loom-test
+
+services:
+  fixture-site:
+    build: ./fixture-site
+
+  engine:
+    build: ../apps/engine-rust
+    environment:
+      LOOM_SERVER_PORT: "7700"
+
+  crawler:
+    build: ../apps/crawler-go
+    environment:
+      LOOM_CRAWLER_PORT: "7710"
+
+  ml:
+    build: ../apps/ml-python
+
+  e2e:
+    image: curlimages/curl:8.11.1
+    depends_on:
+      - fixture-site
+      - engine
+      - crawler
+      - ml
+    entrypoint: ["/bin/sh", "/e2e/smoke.sh"]
+    volumes:
+      - ./e2e:/e2e:ro

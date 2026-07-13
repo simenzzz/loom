@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://loom.dev/schemas/search_request.v1.schema.json",
+  "title": "SearchRequestV1",
+  "description": "Query parameters accepted by loom-server GET /search, expressed as an object so the same contract validates client and server.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "query"],
+  "properties": {
+    "schema": {
+      "description": "Contract discriminator, always search_request.v1",
+      "const": "search_request.v1"
+    },
+    "query": {
+      "description": "User query string",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "vertical": {
+      "description": "Vertical pack id to search (defaults to devdocs)",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "default": "devdocs"
+    },
+    "offset": {
+      "description": "Result offset for pagination",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 0
+    },
+    "limit": {
+      "description": "Number of results to return",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    }
+  }
+}

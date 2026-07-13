@@ -1,0 +1,24 @@
+# Crawl policy for the devdocs vertical. The crawler enforces every limit
+# here; nothing is best-effort. Rates are deliberately conservative.
+[limits]
+max_pages = 50000
+max_depth = 8
+max_body_bytes = 5242880
+
+[politeness]
+default_rps_per_host = 1.0
+respect_robots = true
+respect_crawl_delay = true
+
+[hosts]
+# Only these hosts may be fetched; everything else is dropped at the frontier.
+allowed = [
+    "developer.mozilla.org",
+    "doc.rust-lang.org",
+    "go.dev",
+    "docs.python.org",
+]
+
+[url_filters]
+# Skip URLs matching any of these substrings (query-heavy or non-doc paths)
+deny_contains = ["/search?", "/login", "?page=", "#"]

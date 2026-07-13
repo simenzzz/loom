@@ -1,0 +1,17 @@
+[package]
+name = "loom-contracts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Generated contract types + boundary validation against the shared JSON Schemas"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+regress.workspace = true
+jsonschema.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

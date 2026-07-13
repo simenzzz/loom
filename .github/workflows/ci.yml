@@ -1,0 +1,120 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts-drift:
+    name: contracts codegen drift gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: cargo-bins/cargo-binstall@main
+      - name: Install codegen tools
+        run: |
+          cargo binstall -y cargo-typify
+          go install github.com/atombender/go-jsonschema@v0.23.1
+          cd packages/contracts/codegen
+          npm ci --no-audit --no-fund
+          python3 -m venv .venv
+          .venv/bin/pip install 'datamodel-code-generator==0.68.1'
+      - name: Regenerate and diff
+        run: |
+          GOJSONSCHEMA="$HOME/go/bin/go-jsonschema" packages/contracts/codegen/generate.sh
+          git diff --exit-code -- \
+            apps/crawler-go/internal/contracts/gen \
+            apps/engine-rust/crates/loom-contracts/src/generated \
+            apps/ml-python/src/models/gen \
+            apps/web/src/contracts/gen
+
+  go:
+    name: crawler-go
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/crawler-go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: apps/crawler-go/go.sum
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  rust:
+    name: engine-rust
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/engine-rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/engine-rust
+      - run: cargo fmt --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+
+  python:
+    name: ml-python
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ml-python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e '.[dev]'
+      - run: ruff check src tests
+      - run: mypy src
+      - run: pytest
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm test -- --run
+
+  e2e:
+    name: compose smoke E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run E2E
+        run: |
+          docker compose -f infra/docker-compose.test.yml up --build \
+            --abort-on-container-exit --exit-code-from e2e
+      - name: Teardown
+        if: always()
+        run: docker compose -f infra/docker-compose.test.yml down -v

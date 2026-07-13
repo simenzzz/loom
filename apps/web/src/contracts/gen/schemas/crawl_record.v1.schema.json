@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://loom.dev/schemas/crawl_record.v1.schema.json",
+  "title": "CrawlRecordV1",
+  "description": "One fetched page, written by the Go crawler into segment files (pages.jsonl.zst) and read by the Rust indexer. Both sides validate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "vertical",
+    "url",
+    "canonical_url",
+    "fetched_at",
+    "status_code",
+    "content_type",
+    "depth",
+    "html",
+    "links"
+  ],
+  "properties": {
+    "schema": {
+      "description": "Contract discriminator, always crawl_record.v1",
+      "const": "crawl_record.v1"
+    },
+    "vertical": {
+      "description": "Vertical pack id this page was crawled under",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "url": {
+      "description": "URL as fetched (post-redirect final URL)",
+      "type": "string",
+      "format": "uri",
+      "maxLength": 4096
+    },
+    "canonical_url": {
+      "description": "Canonicalized URL used as the document identity everywhere downstream",
+      "type": "string",
+      "format": "uri",
+      "maxLength": 4096
+    },
+    "fetched_at": {
+      "description": "UTC fetch timestamp",
+      "type": "string",
+      "format": "date-time"
+    },
+    "status_code": {
+      "description": "HTTP status of the final response",
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 599
+    },
+    "content_type": {
+      "description": "Response Content-Type without parameters, e.g. text/html",
+      "type": "string",
+      "maxLength": 255
+    },
+    "depth": {
+      "description": "Link depth from the nearest seed (seeds are depth 0)",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    },
+    "html": {
+      "description": "Raw response body (UTF-8 HTML). Size-capped by the crawler before writing.",
+      "type": "string"
+    },
+    "links": {
+      "description": "Outbound links discovered on the page, canonicalized",
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 4096
+      }
+    },
+    "simhash64": {
+      "description": "64-bit SimHash of the extracted text, hex-encoded (16 chars). Absent until P2.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$"
+    },
+    "etag": {
+      "description": "ETag response header if present",
+      "type": "string",
+      "maxLength": 512
+    },
+    "last_modified": {
+      "description": "Last-Modified response header if present, RFC 1123 as sent",
+      "type": "string",
+      "maxLength": 64
+    }
+  }
+}

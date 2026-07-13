@@ -1,0 +1,18 @@
+{
+  "schema": "search_response.v1",
+  "query": "array map",
+  "vertical": "devdocs",
+  "took_ms": 3.0,
+  "degraded": false,
+  "total": 1,
+  "results": [
+    {
+      "rank": 1,
+      "url": "http://fixture.loom.test/js/array-map.html",
+      "title": "Array.prototype.map()",
+      "snippet": "…",
+      "score": 1.0,
+      "clickbait": true
+    }
+  ]
+}

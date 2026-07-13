@@ -1,0 +1,44 @@
+name: loom
+
+services:
+  fixture-site:
+    build: ./fixture-site
+    ports:
+      - "${LOOM_FIXTURE_SITE_PORT:-7799}:80"
+
+  engine:
+    build: ../apps/engine-rust
+    environment:
+      LOOM_SERVER_PORT: "7700"
+    ports:
+      - "${LOOM_SERVER_PORT:-7700}:7700"
+    volumes:
+      - loomdata:/data
+
+  crawler:
+    build: ../apps/crawler-go
+    environment:
+      LOOM_CRAWLER_PORT: "7710"
+    ports:
+      - "${LOOM_CRAWLER_PORT:-7710}:7710"
+    volumes:
+      - loomdata:/data
+    depends_on:
+      - fixture-site
+
+  ml:
+    build: ../apps/ml-python
+    ports:
+      - "${LOOM_ML_PORT:-7720}:7720"
+
+  web:
+    build: ../apps/web
+    environment:
+      VITE_LOOM_API_BASE: "http://localhost:${LOOM_SERVER_PORT:-7700}"
+    ports:
+      - "${LOOM_WEB_PORT:-5173}:5173"
+    depends_on:
+      - engine
+
+volumes:
+  loomdata:

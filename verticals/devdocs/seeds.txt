@@ -1,0 +1,6 @@
+# One seed URL per line. Lines starting with # are ignored.
+# The real v1 crawl (P8) targets official documentation roots:
+https://developer.mozilla.org/en-US/docs/Web/JavaScript
+https://doc.rust-lang.org/std/
+https://go.dev/doc/
+https://docs.python.org/3/
