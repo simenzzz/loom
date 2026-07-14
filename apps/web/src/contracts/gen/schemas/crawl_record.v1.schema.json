@@ -33,12 +33,14 @@
       "description": "URL as fetched (post-redirect final URL)",
       "type": "string",
       "format": "uri",
+      "pattern": "^https?://",
       "maxLength": 4096
     },
     "canonical_url": {
       "description": "Canonicalized URL used as the document identity everywhere downstream",
       "type": "string",
       "format": "uri",
+      "pattern": "^https?://",
       "maxLength": 4096
     },
     "fetched_at": {
@@ -74,6 +76,7 @@
       "items": {
         "type": "string",
         "format": "uri",
+        "pattern": "^https?://",
         "maxLength": 4096
       }
     },

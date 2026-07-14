@@ -15,7 +15,10 @@ class Result(BaseModel):
     rank: conint(ge=1) = Field(
         ..., description='1-based rank within this response page'
     )
-    url: AnyUrl = Field(..., description='Canonical document URL')
+    url: AnyUrl = Field(
+        ...,
+        description='Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)',
+    )
     title: constr(max_length=512) = Field(..., description='Document title (extracted)')
     snippet: constr(max_length=1024) = Field(
         ...,

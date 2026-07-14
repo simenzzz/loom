@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   contracts-drift:
     name: contracts codegen drift gate
@@ -14,17 +17,17 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.25"
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: cargo-bins/cargo-binstall@main
+      - uses: cargo-bins/cargo-binstall@732870f031d2fb36309d0deaf36abcc704a7be65 # v1.20.1
       - name: Install codegen tools
         run: |
-          cargo binstall -y cargo-typify
+          cargo binstall -y cargo-typify@0.7.0
           go install github.com/atombender/go-jsonschema@v0.23.1
           cd packages/contracts/codegen
           npm ci --no-audit --no-fund
@@ -62,7 +65,7 @@ jobs:
         working-directory: apps/engine-rust
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2

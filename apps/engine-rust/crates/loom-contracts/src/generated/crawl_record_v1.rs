@@ -56,7 +56,8 @@ pub mod error {
 #[doc = "      \"description\": \"Canonicalized URL used as the document identity everywhere downstream\","]
 #[doc = "      \"type\": \"string\","]
 #[doc = "      \"format\": \"uri\","]
-#[doc = "      \"maxLength\": 4096"]
+#[doc = "      \"maxLength\": 4096,"]
+#[doc = "      \"pattern\": \"^https?://\""]
 #[doc = "    },"]
 #[doc = "    \"content_type\": {"]
 #[doc = "      \"description\": \"Response Content-Type without parameters, e.g. text/html\","]
@@ -94,7 +95,8 @@ pub mod error {
 #[doc = "      \"items\": {"]
 #[doc = "        \"type\": \"string\","]
 #[doc = "        \"format\": \"uri\","]
-#[doc = "        \"maxLength\": 4096"]
+#[doc = "        \"maxLength\": 4096,"]
+#[doc = "        \"pattern\": \"^https?://\""]
 #[doc = "      },"]
 #[doc = "      \"maxItems\": 10000"]
 #[doc = "    },"]
@@ -117,7 +119,8 @@ pub mod error {
 #[doc = "      \"description\": \"URL as fetched (post-redirect final URL)\","]
 #[doc = "      \"type\": \"string\","]
 #[doc = "      \"format\": \"uri\","]
-#[doc = "      \"maxLength\": 4096"]
+#[doc = "      \"maxLength\": 4096,"]
+#[doc = "      \"pattern\": \"^https?://\""]
 #[doc = "    },"]
 #[doc = "    \"vertical\": {"]
 #[doc = "      \"description\": \"Vertical pack id this page was crawled under\","]
@@ -178,7 +181,8 @@ impl CrawlRecordV1 {
 #[doc = "  \"description\": \"Canonicalized URL used as the document identity everywhere downstream\","]
 #[doc = "  \"type\": \"string\","]
 #[doc = "  \"format\": \"uri\","]
-#[doc = "  \"maxLength\": 4096"]
+#[doc = "  \"maxLength\": 4096,"]
+#[doc = "  \"pattern\": \"^https?://\""]
 #[doc = "}"]
 #[doc = r" ```"]
 #[doc = r" </details>"]
@@ -201,6 +205,11 @@ impl ::std::str::FromStr for CrawlRecordV1CanonicalUrl {
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 4096usize {
             return Err("longer than 4096 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^https?://").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^https?://\"".into());
         }
         Ok(Self(value.to_string()))
     }
@@ -454,7 +463,8 @@ impl<'de> ::serde::Deserialize<'de> for CrawlRecordV1LastModified {
 #[doc = "{"]
 #[doc = "  \"type\": \"string\","]
 #[doc = "  \"format\": \"uri\","]
-#[doc = "  \"maxLength\": 4096"]
+#[doc = "  \"maxLength\": 4096,"]
+#[doc = "  \"pattern\": \"^https?://\""]
 #[doc = "}"]
 #[doc = r" ```"]
 #[doc = r" </details>"]
@@ -477,6 +487,11 @@ impl ::std::str::FromStr for CrawlRecordV1LinksItem {
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 4096usize {
             return Err("longer than 4096 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^https?://").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^https?://\"".into());
         }
         Ok(Self(value.to_string()))
     }
@@ -595,7 +610,8 @@ impl<'de> ::serde::Deserialize<'de> for CrawlRecordV1Simhash64 {
 #[doc = "  \"description\": \"URL as fetched (post-redirect final URL)\","]
 #[doc = "  \"type\": \"string\","]
 #[doc = "  \"format\": \"uri\","]
-#[doc = "  \"maxLength\": 4096"]
+#[doc = "  \"maxLength\": 4096,"]
+#[doc = "  \"pattern\": \"^https?://\""]
 #[doc = "}"]
 #[doc = r" ```"]
 #[doc = r" </details>"]
@@ -618,6 +634,11 @@ impl ::std::str::FromStr for CrawlRecordV1Url {
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 4096usize {
             return Err("longer than 4096 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^https?://").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^https?://\"".into());
         }
         Ok(Self(value.to_string()))
     }

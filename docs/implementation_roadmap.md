@@ -120,7 +120,8 @@ loop runs in compose E2E with zero live network.
 
 - [ ] Fly.io app (server + weekly crawl/index job, 3GB volume)
 - [ ] Render: ml-python; Vercel: web
-- [ ] Rate limiting, CORS allowlist, service tokens
+- [ ] Rate limiting, CORS allowlist, service tokens (fail closed at startup
+      if `LOOM_ML_SERVICE_TOKEN` is empty or still the template placeholder)
 - [ ] Real 50k-page devdocs crawl + politeness audit
 - [ ] README demo GIF + NDCG progression table; ADRs finalized
 

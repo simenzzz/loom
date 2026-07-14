@@ -91,10 +91,11 @@ pub mod error {
 #[doc = "            \"maxLength\": 512"]
 #[doc = "          },"]
 #[doc = "          \"url\": {"]
-#[doc = "            \"description\": \"Canonical document URL\","]
+#[doc = "            \"description\": \"Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)\","]
 #[doc = "            \"type\": \"string\","]
 #[doc = "            \"format\": \"uri\","]
-#[doc = "            \"maxLength\": 4096"]
+#[doc = "            \"maxLength\": 4096,"]
+#[doc = "            \"pattern\": \"^https?://\""]
 #[doc = "          }"]
 #[doc = "        },"]
 #[doc = "        \"additionalProperties\": false"]
@@ -271,10 +272,11 @@ impl<'de> ::serde::Deserialize<'de> for SearchResponseV1Query {
 #[doc = "      \"maxLength\": 512"]
 #[doc = "    },"]
 #[doc = "    \"url\": {"]
-#[doc = "      \"description\": \"Canonical document URL\","]
+#[doc = "      \"description\": \"Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)\","]
 #[doc = "      \"type\": \"string\","]
 #[doc = "      \"format\": \"uri\","]
-#[doc = "      \"maxLength\": 4096"]
+#[doc = "      \"maxLength\": 4096,"]
+#[doc = "      \"pattern\": \"^https?://\""]
 #[doc = "    }"]
 #[doc = "  },"]
 #[doc = "  \"additionalProperties\": false"]
@@ -292,7 +294,7 @@ pub struct SearchResponseV1ResultsItem {
     pub snippet: SearchResponseV1ResultsItemSnippet,
     #[doc = "Document title (extracted)"]
     pub title: SearchResponseV1ResultsItemTitle,
-    #[doc = "Canonical document URL"]
+    #[doc = "Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)"]
     pub url: SearchResponseV1ResultsItemUrl,
 }
 impl SearchResponseV1ResultsItem {
@@ -438,16 +440,17 @@ impl<'de> ::serde::Deserialize<'de> for SearchResponseV1ResultsItemTitle {
             })
     }
 }
-#[doc = "Canonical document URL"]
+#[doc = "Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)"]
 #[doc = r""]
 #[doc = r" <details><summary>JSON schema</summary>"]
 #[doc = r""]
 #[doc = r" ```json"]
 #[doc = "{"]
-#[doc = "  \"description\": \"Canonical document URL\","]
+#[doc = "  \"description\": \"Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)\","]
 #[doc = "  \"type\": \"string\","]
 #[doc = "  \"format\": \"uri\","]
-#[doc = "  \"maxLength\": 4096"]
+#[doc = "  \"maxLength\": 4096,"]
+#[doc = "  \"pattern\": \"^https?://\""]
 #[doc = "}"]
 #[doc = r" ```"]
 #[doc = r" </details>"]
@@ -470,6 +473,11 @@ impl ::std::str::FromStr for SearchResponseV1ResultsItemUrl {
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 4096usize {
             return Err("longer than 4096 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^https?://").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^https?://\"".into());
         }
         Ok(Self(value.to_string()))
     }

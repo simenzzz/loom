@@ -39,7 +39,7 @@ export interface SearchResponseV1 {
      */
     rank: number;
     /**
-     * Canonical document URL
+     * Canonical document URL (http/https only — schema-enforced so javascript: URIs can never reach an href)
      */
     url: string;
     /**

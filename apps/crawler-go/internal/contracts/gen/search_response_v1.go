@@ -44,7 +44,8 @@ type SearchResponseV1ResultsElem struct {
 	// Document title (extracted)
 	Title string `json:"title" yaml:"title" mapstructure:"title"`
 
-	// Canonical document URL
+	// Canonical document URL (http/https only — schema-enforced so javascript: URIs
+	// can never reach an href)
 	Url string `json:"url" yaml:"url" mapstructure:"url"`
 }
 

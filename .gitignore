@@ -32,3 +32,6 @@ htmlcov/
 # Eval outputs are committed selectively: baselines/ yes, raw results/ yes (append-only),
 # but scratch bench artifacts no
 eval/results/*.tmp
+
+# Python packaging metadata
+*.egg-info/

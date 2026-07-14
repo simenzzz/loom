@@ -60,10 +60,12 @@ async fn search(Query(params): Query<Vec<(String, String)>>) -> Response {
         "results": [],
     });
     if let Err(violation) = validate(Contract::SearchResponseV1, &response) {
-        // We refuse to emit anything that violates our own contract.
+        // We refuse to emit anything that violates our own contract. Detail
+        // goes to the log, not the client.
+        eprintln!("loom-server: self-emitted contract violation: {violation}");
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({ "error": violation.to_string() })),
+            Json(json!({ "error": "internal error" })),
         )
             .into_response();
     }

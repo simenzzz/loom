@@ -1,8 +1,0 @@
-pyproject.toml
-loom_ml.egg-info/PKG-INFO
-loom_ml.egg-info/SOURCES.txt
-loom_ml.egg-info/dependency_links.txt
-loom_ml.egg-info/requires.txt
-loom_ml.egg-info/top_level.txt
-tests/test_contract_fixtures.py
-tests/test_healthz.py
