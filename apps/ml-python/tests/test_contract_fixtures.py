@@ -18,7 +18,12 @@ FIXTURES = REPO_ROOT / "packages" / "contracts" / "fixtures"
 def _validator(schema_name: str) -> Draft202012Validator:
     schema_path = SCHEMAS / f"{schema_name}.schema.json"
     schema = json.loads(schema_path.read_text())
-    return Draft202012Validator(schema)
+    # format is assertion, not annotation — all four languages must agree on
+    # what the corpus accepts. Requires rfc3339-validator + rfc3987 (dev deps);
+    # without them FormatChecker silently skips those formats.
+    return Draft202012Validator(
+        schema, format_checker=Draft202012Validator.FORMAT_CHECKER
+    )
 
 
 def _cases() -> list[tuple[str, str, Path]]:

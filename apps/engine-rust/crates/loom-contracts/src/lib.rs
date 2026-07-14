@@ -54,7 +54,11 @@ impl Contract {
         slot.get_or_init(|| {
             let schema: Value = serde_json::from_str(self.raw_schema())
                 .expect("embedded schema is valid JSON (checked by codegen)");
-            jsonschema::validator_for(&schema)
+            // format is assertion, not annotation — all four languages must
+            // agree on what the corpus accepts.
+            jsonschema::options()
+                .should_validate_formats(true)
+                .build(&schema)
                 .expect("embedded schema compiles (checked by contract tests)")
         })
     }

@@ -15,6 +15,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 SCHEMAS="$ROOT/packages/contracts/schemas"
 CODEGEN="$ROOT/packages/contracts/codegen"
 
+# shellcheck source=versions.env
+source "$CODEGEN/versions.env"
+
 TS_OUT="$ROOT/apps/web/src/contracts/gen"
 PY_OUT="$ROOT/apps/ml-python/src/models/gen"
 GO_OUT="$ROOT/apps/crawler-go/internal/contracts/gen"
@@ -27,10 +30,22 @@ DATAMODEL_CODEGEN="${DATAMODEL_CODEGEN:-$CODEGEN/.venv/bin/datamodel-codegen}"
 need() {
   command -v "$1" >/dev/null 2>&1 || { echo "ERROR: missing tool: $1 ($2)" >&2; exit 1; }
 }
-need npx "npm install in packages/contracts/codegen"
-need cargo-typify "cargo install cargo-typify --locked"
-[[ -x "$GOJSONSCHEMA" ]] || { echo "ERROR: missing $GOJSONSCHEMA (go install github.com/omissis/go-jsonschema/cmd/gojsonschema@latest)" >&2; exit 1; }
-[[ -x "$DATAMODEL_CODEGEN" ]] || { echo "ERROR: missing $DATAMODEL_CODEGEN (python3 -m venv $CODEGEN/.venv && $CODEGEN/.venv/bin/pip install 'datamodel-code-generator[http]')" >&2; exit 1; }
+need npx "npm ci in packages/contracts/codegen"
+need cargo-typify "cargo install cargo-typify --locked --version $CARGO_TYPIFY_VERSION (or: make setup-codegen)"
+[[ -x "$GOJSONSCHEMA" ]] || { echo "ERROR: missing $GOJSONSCHEMA (go install $GO_JSONSCHEMA_MODULE@$GO_JSONSCHEMA_VERSION, or: make setup-codegen)" >&2; exit 1; }
+[[ -x "$DATAMODEL_CODEGEN" ]] || { echo "ERROR: missing $DATAMODEL_CODEGEN (make setup-codegen)" >&2; exit 1; }
+
+# Refuse to generate with a drifted toolchain — output differs across versions
+actual_typify="$(cargo-typify --help >/dev/null 2>&1; cargo typify --version 2>/dev/null | awk '{print $2}')"
+if [[ -n "$actual_typify" && "$actual_typify" != "$CARGO_TYPIFY_VERSION" ]]; then
+  echo "ERROR: cargo-typify $actual_typify installed, need $CARGO_TYPIFY_VERSION (see versions.env)" >&2
+  exit 1
+fi
+actual_dmc="$("$DATAMODEL_CODEGEN" --version 2>/dev/null | awk '{print $NF}')"
+if [[ -n "$actual_dmc" && "$actual_dmc" != "$DATAMODEL_CODEGEN_VERSION" ]]; then
+  echo "ERROR: datamodel-codegen $actual_dmc installed, need $DATAMODEL_CODEGEN_VERSION (see versions.env)" >&2
+  exit 1
+fi
 
 mkdir -p "$TS_OUT" "$PY_OUT" "$GO_OUT" "$RS_OUT"
 

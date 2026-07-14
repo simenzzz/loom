@@ -41,6 +41,11 @@ the fixture `js/array-map.html` page top-3; smoke eval NDCG recorded; full
 loop runs in compose E2E with zero live network.
 
 - [ ] Vertical pack loader (`internal/pack`) reading pack/policy/extract TOML
+- [ ] Compose test env: health-gated `depends_on` + container healthchecks
+      when the full-loop E2E replaces the P0 smoke (review deferral)
+- [ ] ml-python: real package layout/entrypoint once the sidecar gains
+      endpoints — `pip install .` currently ships deps only (review deferral;
+      P6 at the latest)
 - [ ] Minimal polite fetcher: robots.txt honor, 1 rps/host, BFS, depth limit
 - [ ] Segment writer emitting validated CrawlRecords (`pages.jsonl.zst` + manifest)
 - [ ] Naive extraction (tag-strip + title) & whitespace tokenizer (Rust)

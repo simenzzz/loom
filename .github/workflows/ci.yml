@@ -25,14 +25,15 @@ jobs:
         with:
           python-version: "3.12"
       - uses: cargo-bins/cargo-binstall@732870f031d2fb36309d0deaf36abcc704a7be65 # v1.20.1
-      - name: Install codegen tools
+      - name: Install codegen tools (pinned by versions.env)
         run: |
-          cargo binstall -y cargo-typify@0.7.0
-          go install github.com/atombender/go-jsonschema@v0.23.1
+          source packages/contracts/codegen/versions.env
+          cargo binstall -y "cargo-typify@$CARGO_TYPIFY_VERSION"
+          go install "$GO_JSONSCHEMA_MODULE@$GO_JSONSCHEMA_VERSION"
           cd packages/contracts/codegen
           npm ci --no-audit --no-fund
           python3 -m venv .venv
-          .venv/bin/pip install 'datamodel-code-generator==0.68.1'
+          .venv/bin/pip install "datamodel-code-generator==$DATAMODEL_CODEGEN_VERSION"
       - name: Regenerate and diff
         run: |
           GOJSONSCHEMA="$HOME/go/bin/go-jsonschema" packages/contracts/codegen/generate.sh

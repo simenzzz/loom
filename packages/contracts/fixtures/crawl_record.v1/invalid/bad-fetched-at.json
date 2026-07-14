@@ -1,0 +1,12 @@
+{
+  "schema": "crawl_record.v1",
+  "vertical": "devdocs",
+  "url": "http://fixture.loom.test/js/array-map.html",
+  "canonical_url": "http://fixture.loom.test/js/array-map.html",
+  "fetched_at": "not-a-date",
+  "status_code": 200,
+  "content_type": "text/html",
+  "depth": 1,
+  "html": "<html></html>",
+  "links": []
+}

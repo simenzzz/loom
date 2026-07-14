@@ -33,11 +33,16 @@ async fn search(Query(params): Query<Vec<(String, String)>>) -> Response {
         match key.as_str() {
             "q" | "query" => request["query"] = Value::String(value),
             "vertical" => request["vertical"] = Value::String(value),
-            "offset" | "limit" => {
-                if let Ok(n) = value.parse::<i64>() {
-                    request[key] = Value::Number(n.into());
+            "offset" | "limit" => match value.parse::<i64>() {
+                Ok(n) => request[key] = Value::Number(n.into()),
+                Err(_) => {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(json!({ "error": format!("{key} must be an integer") })),
+                    )
+                        .into_response();
                 }
-            }
+            },
             _ => {} // unknown params rejected below by additionalProperties
         }
     }
@@ -127,5 +132,12 @@ mod tests {
     async fn oversized_limit_is_rejected_by_contract() {
         let (status, _) = get_json("/search?q=x&limit=500").await;
         assert_eq!(status, StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn non_numeric_limit_is_rejected() {
+        let (status, body) = get_json("/search?q=x&limit=abc").await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert!(body["error"].as_str().unwrap_or_default().contains("limit"));
     }
 }

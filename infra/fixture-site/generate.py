@@ -158,7 +158,7 @@ def build_site(out: Path) -> int:
         "User-agent: *\nDisallow: /private/\nCrawl-delay: 1\nSitemap: /sitemap.xml\n"
     )
     sitemap_urls = "\n".join(
-        f"  <url><loc>http://fixture{href}</loc></url>" for href, _ in all_pages
+        f"  <url><loc>http://fixture.loom.test{href}</loc></url>" for href, _ in all_pages
     )
     (out / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'

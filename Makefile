@@ -17,12 +17,21 @@ help: ## Show this help
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: setup
-setup: ## Install all per-language dependencies
+setup: setup-codegen ## Install all per-language dependencies + codegen toolchain
 	cd apps/crawler-go && go mod download
 	cd apps/engine-rust && cargo fetch
 	cd apps/ml-python && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-	cd apps/web && npm install
-	cd packages/contracts/codegen && npm install
+	cd apps/web && npm ci
+
+.PHONY: setup-codegen
+setup-codegen: ## Install the pinned contracts codegen toolchain (versions.env)
+	cd packages/contracts/codegen && npm ci
+	set -a && . packages/contracts/codegen/versions.env && set +a && \
+		go install $$GO_JSONSCHEMA_MODULE@$$GO_JSONSCHEMA_VERSION && \
+		(cargo typify --version 2>/dev/null | grep -q "$$CARGO_TYPIFY_VERSION" || \
+			cargo install cargo-typify --locked --version $$CARGO_TYPIFY_VERSION) && \
+		python3 -m venv packages/contracts/codegen/.venv && \
+		packages/contracts/codegen/.venv/bin/pip install -q "datamodel-code-generator==$$DATAMODEL_CODEGEN_VERSION"
 
 # ------------------------------------------------------------
 # Contracts

@@ -45,6 +45,9 @@ func compiled(name Name) (*jsonschema.Schema, error) {
 		return nil, fmt.Errorf("contracts: schema %q is not valid JSON: %w", name, err)
 	}
 	c := jsonschema.NewCompiler()
+	// format is assertion, not annotation — all four languages must agree
+	// on what the corpus accepts (cross-language consistency rule).
+	c.AssertFormat()
 	url := fmt.Sprintf("loom:///%s.schema.json", name)
 	if err := c.AddResource(url, doc); err != nil {
 		return nil, fmt.Errorf("contracts: registering schema %q: %w", name, err)
