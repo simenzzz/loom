@@ -32,7 +32,7 @@ proven.
 - [x] `verticals/devdocs` pack (pack/policy/extract/seeds)
 - [x] docker-compose.yml + docker-compose.test.yml + P0 smoke E2E
 - [x] CI: per-language jobs + contracts drift gate + compose E2E
-- [ ] First commit pushed; CI observed green on GitHub
+- [x] First commit pushed; CI observed green on GitHub
 
 ## P1 — Thin slice: crawl 100 pages → index → search box
 
