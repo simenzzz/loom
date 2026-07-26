@@ -4,6 +4,10 @@ Polite crawler: vertical pack in, validated CrawlRecord segment files out
 (`data/crawl/<vertical>/segments/`). The filesystem is the boundary with the
 indexer — no RPC.
 
+The crawler core — fetcher, robots, canonicalization, frontier, extraction,
+orchestration — is Sami's to implement. See the TODO(you) contract in the
+root `.claude/CLAUDE.md`; `make stubs` lists the open sites.
+
 Conventions:
 - Go 1.25, stdlib-first; `-race` always; no sleeps in tests (inject clocks)
 - All web interaction in tests goes through `httptest` fakes

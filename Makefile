@@ -85,6 +85,12 @@ test-python: ## Python tests
 test-web: ## Web tests
 	cd apps/web && npm test -- --run
 
+.PHONY: stubs
+stubs: ## List open TODO(you) sites (Sami implements these — see .claude/CLAUDE.md)
+	@grep -rn "TODO(you)" apps eval 2>/dev/null \
+		--include=*.go --include=*.rs --include=*.py --include=*.ts --include=*.tsx \
+		|| echo "no open stubs"
+
 .PHONY: lint
 lint: ## Lint all languages
 	cd apps/crawler-go && go vet ./...
