@@ -50,7 +50,7 @@ the open sites.
 |---|---|---|---|
 | 0 | Working agreement: division of labor, TODO(you) contract, `make stubs` | Claude | [x] |
 | 1 | Contracts prerequisite: `segment_manifest.v1` + `vertical_pack.v1` schemas, fixtures, 4-language codegen | Claude | [x] |
-| 2 | Vertical pack loader (`internal/pack`) reading pack/policy/extract TOML | Claude | [ ] |
+| 2 | Vertical pack loader (`internal/pack`) reading pack/policy/extract TOML | Claude | [x] |
 | 3 | Minimal polite fetcher: robots.txt honor, 1 rps/host, BFS, depth limit **⇤ handoff** | **Sami** | [ ] |
 | 4 | Segment writer emitting validated CrawlRecords (`pages.jsonl.zst` + manifest) + `loomcrawl crawl` CLI | Claude | [ ] |
 | 5 | Naive extraction (tag-strip + title) & whitespace tokenizer (Rust) **⇤ handoff** | **Sami** | [ ] |
@@ -63,9 +63,14 @@ the open sites.
 | 12 | Replace P0 smoke E2E with full crawl→index→search E2E | Claude | [ ] |
 | 13 | ml-python: real package layout/entrypoint — `pip install .` currently ships deps only (P0 review deferral; P6 at the latest) | Claude | [ ] |
 
-Steps 0 and 1 are done: committed (`2b9a10c`, `eeee83b`) and CI green on
-`02c700e` — all six jobs, including the contracts drift gate. Done means
-committed *and* CI green; neither alone earns an `[x]`.
+Steps 0–2 are done: committed and CI green (`02c700e`, `44552a9` — all six
+jobs each, including the contracts drift gate). Done means committed *and* CI
+green; neither alone earns an `[x]`.
+
+Step 2 exports `pack.NormalizeHost` and `pack.HostAllowed`. The frontier in
+step 3 must use them rather than growing its own host comparison: a second
+implementation of one allowlist means a seed accepted at load can be dropped
+at depth 0, or a host the loader refused can be accepted later.
 
 Step 1 was not in the original P1 list. It was added because the segment
 writer cannot emit a *validated* manifest without a manifest schema, and the
