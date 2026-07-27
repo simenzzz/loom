@@ -81,8 +81,11 @@ Four services + contracts:
 - **P1 — Thin slice (~1.5wk)**: minimal polite BFS crawl of fixture site → naive
   extraction → in-memory inverted index with correct BM25 → v0 flat index file →
   axum /search → React search box. 10-query smoke eval.
-  *Exit*: "array map" returns MDN Array.prototype.map top-3; full loop runs in compose
-  E2E with zero live network. Demoable search engine over 100 pages.
+  *Exit*: "array map" returns the fixture site's synthetic Array.prototype.map() page
+  top-3 (the corpus is generated, deliberately not MDN content); full loop runs in
+  compose E2E with zero live network. Demoable search engine over the ~32-page fixture
+  corpus — see the roadmap for the reachable-set breakdown and the Step 10 decision on
+  growing it.
 - **P2 — Real crawler + eval v1 + dashboard (~2wk)**: frontier heap, token buckets,
   Bloom filter + ledger, full canonicalization, sitemaps, SimHash+LSH dedup, resume,
   WS dashboard; eval harness v1 + 60 graded queries.

@@ -34,27 +34,91 @@ proven.
 - [x] CI: per-language jobs + contracts drift gate + compose E2E
 - [x] First commit pushed; CI observed green on GitHub
 
-## P1 — Thin slice: crawl 100 pages → index → search box
+## P1 — Thin slice: crawl the fixture site → index → search box
 
 Exit criteria: `make crawl-fixture && make index` then "array map" returns
 the fixture `js/array-map.html` page top-3; smoke eval NDCG recorded; full
 loop runs in compose E2E with zero live network.
 
-- [ ] Vertical pack loader (`internal/pack`) reading pack/policy/extract TOML
-- [ ] Compose test env: health-gated `depends_on` + container healthchecks
-      when the full-loop E2E replaces the P0 smoke (review deferral)
-- [ ] ml-python: real package layout/entrypoint once the sidecar gains
-      endpoints — `pip install .` currently ships deps only (review deferral;
-      P6 at the latest)
-- [ ] Minimal polite fetcher: robots.txt honor, 1 rps/host, BFS, depth limit
-- [ ] Segment writer emitting validated CrawlRecords (`pages.jsonl.zst` + manifest)
-- [ ] Naive extraction (tag-strip + title) & whitespace tokenizer (Rust)
-- [ ] In-memory inverted index + correct BM25 (k1=1.2, b=0.75)
-- [ ] `loom-indexer`: segments → v0 flat index file; `loom-server` loads it
-- [ ] `/search` over the real index + fixed-window snippets
-- [ ] Search page renders live results with latency badge
-- [ ] `eval/run.py` smoke harness + 10 golden queries/qrels
-- [ ] Replace P0 smoke E2E with full crawl→index→search E2E
+Ordered by dependency. **Owner** follows the division of labor in
+`.claude/CLAUDE.md`: Sami implements the core algorithms, Claude scaffolds,
+tests, plumbs and reviews. Steps marked **⇤ handoff** are where Claude commits
+compiling `TODO(you)` stubs plus failing tests and stops; `make stubs` lists
+the open sites.
+
+| # | Deliverable | Owner | Done |
+|---|---|---|---|
+| 0 | Working agreement: division of labor, TODO(you) contract, `make stubs` | Claude | [ ] |
+| 1 | Contracts prerequisite: `segment_manifest.v1` + `vertical_pack.v1` schemas, fixtures, 4-language codegen | Claude | [ ] |
+| 2 | Vertical pack loader (`internal/pack`) reading pack/policy/extract TOML | Claude | [ ] |
+| 3 | Minimal polite fetcher: robots.txt honor, 1 rps/host, BFS, depth limit **⇤ handoff** | **Sami** | [ ] |
+| 4 | Segment writer emitting validated CrawlRecords (`pages.jsonl.zst` + manifest) + `loomcrawl crawl` CLI | Claude | [ ] |
+| 5 | Naive extraction (tag-strip + title) & whitespace tokenizer (Rust) **⇤ handoff** | **Sami** | [ ] |
+| 6 | In-memory inverted index + correct BM25 (k1=1.2, b=0.75) **⇤ handoff** | **Sami** | [ ] |
+| 7 | `loom-indexer`: segments → v0 flat index file; `loom-server` loads it | Claude | [ ] |
+| 8 | `/search` over the real index + fixed-window snippets **⇤ handoff** | **Sami** | [ ] |
+| 9 | Search page renders live results with latency badge | Claude | [ ] |
+| 10 | `eval/run.py` smoke harness + 10 golden queries/qrels (`ndcg_at_k` **⇤ handoff**) | split | [ ] |
+| 11 | Compose test env: health-gated `depends_on` + container healthchecks (P0 review deferral) | Claude | [ ] |
+| 12 | Replace P0 smoke E2E with full crawl→index→search E2E | Claude | [ ] |
+| 13 | ml-python: real package layout/entrypoint — `pip install .` currently ships deps only (P0 review deferral; P6 at the latest) | Claude | [ ] |
+
+Steps 0 and 1 are committed locally (`2b9a10c`, `eeee83b`) but **not pushed**,
+so CI has not run on either and neither box is ticked — done means committed
+*and* CI green. They flip together on the first green run after the push.
+
+Step 1 was not in the original P1 list. It was added because the segment
+writer cannot emit a *validated* manifest without a manifest schema, and the
+pack loader cannot validate what it parsed without a pack schema. The v0 flat
+index format stays internal to Rust and gets no contract — it is documented
+byte-level in `STORAGE_FORMATS.md` instead.
+
+### What the fixture site actually yields
+
+This heading previously read "crawl 100 pages". It cannot. Reachable set for
+a BFS crawl seeded at `index.html` under `max_depth: 8`:
+
+| | pages |
+|---|---|
+| `index.html` (seed, depth 0) | 1 |
+| canonical doc pages (depth 1) | 19 |
+| `*-printable.html` near-duplicates (depth 2) | 4 |
+| `calendar/day-0..7` (depth 1–8, trap truncated by the depth cap) | 8 |
+| `private/secret.html` (robots-disallowed — fetching it is a bug) | 0 |
+| `loop/x` ↔ `loop/y` (linked from nothing; reachable only if seeded) | 0 |
+| **total** | **32** |
+
+The four near-duplicates were unreachable until 2026-07-27: they were written
+to disk but appeared in no `<a href>`, no index, no sitemap, so a BFS crawl
+never fetched them and **P2's SimHash + 4-band LSH dedup had nothing to
+dedup**. Each is now linked from its own canonical page. That link adds no
+`rng` draw, so the corpus stays byte-identical under `SEED` apart from the
+four canonical pages that gained the link.
+
+### Open decision — grow the fixture corpus? (due at Step 10)
+
+**The deadline is real, not stylistic.** `infra/fixture-site/generate.py`
+declares `SEED = 0x1005  # fixed forever; eval golden data depends on this
+layout`, and the generator draws from a single sequential `rng`. Inserting
+one entry into `METHODS` shifts every later page's filler text and every
+`rng.randrange` cross-link. Growing the site costs nothing **until Step 10
+commits the first eval baseline**, and invalidates that baseline plus its
+qrels afterwards.
+
+What to weigh:
+
+- **Is this a plumbing fixture or an eval corpus?** At ~19 real documents,
+  IDF barely discriminates — a term in 4 documents versus 5 is noise. The
+  top-3 exit criterion therefore proves the pipeline is *connected*, not that
+  ranking is *good*. Acceptable for P1's explicitly-smoke eval.
+- **P2 asks for 60 graded golden queries.** 32 documents cannot support 60
+  meaningful queries, so the pressure to grow comes from P2, not P1.
+- **Do not reach a page count by raising `max_depth`.** That sweeps in the
+  calendar trap — 60 pages of "Events for day N. Nothing scheduled." — which
+  pollutes the corpus *and* defeats the trap test P2 exists to prove.
+
+Current lean: grow to a few hundred synthetic pages at Step 10, driven by
+P2's needs. Not decided.
 
 ## P2 — Real crawler + eval harness v1 + dashboard
 
