@@ -111,9 +111,20 @@ def build_site(out: Path) -> int:
             ]
             cross = [all_pages[rng.randrange(len(all_pages))] for _ in range(3)]
             body = f"<h2>Description</h2>{paragraphs(rng, 3)}<h2>Examples</h2>{paragraphs(rng, 2)}"
+            # The near-duplicate written below must be reachable by link, or a
+            # BFS crawl never fetches it and P2's SimHash/LSH dedup has nothing
+            # to dedup. Link it from its own canonical page: that adds no rng
+            # draw, so every other page stays byte-identical under SEED.
+            # Never add these to all_pages — that changes len(all_pages) and
+            # reshuffles every rng.randrange cross-link in the corpus.
+            printable = (
+                [(f"/{section}/{slug}-printable.html", f"{title} (printable)")]
+                if i == 0
+                else []
+            )
             path = out / section / f"{slug}.html"
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(page(title, lead, body, siblings + cross))
+            path.write_text(page(title, lead, body, siblings + cross + printable))
             count += 1
 
             # Near-duplicate page: same text, one word changed (SimHash target)
