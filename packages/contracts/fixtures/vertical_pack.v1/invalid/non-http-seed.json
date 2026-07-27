@@ -1,0 +1,66 @@
+{
+  "schema": "vertical_pack.v1",
+  "pack": {
+    "id": "devdocs",
+    "name": "Developer Docs",
+    "tab_label": "Docs"
+  },
+  "ranking": {
+    "title_weight": 2.5,
+    "body_weight": 1.0,
+    "code_weight": 0.8,
+    "anchor_weight": 1.5,
+    "recency_half_life_days": 0,
+    "bm25_k1": 1.2,
+    "bm25_b": 0.75
+  },
+  "limits": {
+    "max_pages": 50000,
+    "max_depth": 8,
+    "max_body_bytes": 5242880
+  },
+  "politeness": {
+    "default_rps_per_host": 1.0,
+    "respect_robots": true,
+    "respect_crawl_delay": true
+  },
+  "hosts": {
+    "allowed": [
+      "developer.mozilla.org",
+      "doc.rust-lang.org",
+      "go.dev",
+      "docs.python.org"
+    ]
+  },
+  "url_filters": {
+    "deny_contains": [
+      "/search?",
+      "/login",
+      "?page=",
+      "#"
+    ]
+  },
+  "content": {
+    "main_selectors": [
+      "main",
+      "article",
+      "#content"
+    ],
+    "title_selectors": [
+      "h1",
+      "title"
+    ]
+  },
+  "code": {
+    "preserve_selectors": [
+      "pre",
+      "code"
+    ]
+  },
+  "seeds": [
+    "file:///etc/passwd",
+    "https://doc.rust-lang.org/std/",
+    "https://go.dev/doc/",
+    "https://docs.python.org/3/"
+  ]
+}

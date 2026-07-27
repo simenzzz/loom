@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://loom.dev/schemas/segment_manifest.v1.schema.json",
+  "title": "SegmentManifestV1",
+  "description": "Describes one crawl segment directory: the compressed CrawlRecord file beside it, its integrity hash, and the counters needed to plan an index build. Written by the Go crawler, read by the Rust indexer. Both sides validate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "vertical",
+    "segment_id",
+    "created_at",
+    "crawler_version",
+    "record_count",
+    "pages_file",
+    "pages_sha256",
+    "bytes_compressed",
+    "bytes_uncompressed"
+  ],
+  "dependentRequired": {
+    "first_fetched_at": ["last_fetched_at"],
+    "last_fetched_at": ["first_fetched_at"]
+  },
+  "properties": {
+    "schema": {
+      "description": "Contract discriminator, always segment_manifest.v1",
+      "type": "string",
+      "const": "segment_manifest.v1"
+    },
+    "vertical": {
+      "description": "Vertical pack id this segment was crawled under",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "segment_id": {
+      "description": "Identifier of this segment, unique within the vertical and sortable by creation order",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "created_at": {
+      "description": "UTC timestamp at which the segment was sealed",
+      "type": "string",
+      "format": "date-time"
+    },
+    "crawler_version": {
+      "description": "Version of the crawler that produced the segment, for provenance when a build looks wrong",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "record_count": {
+      "description": "Number of CrawlRecord documents in the pages file. A reported count, not a trusted one: the reader counts what it actually decodes and treats a mismatch as a corrupt segment. Never pre-allocate from this value.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000
+    },
+    "pages_file": {
+      "description": "Name of the compressed CrawlRecord file in this segment directory. A bare filename by construction: the reader joins it to the segment directory, so path separators and traversal are forbidden by the pattern.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "not": { "pattern": "[\\n\\r]" }
+    },
+    "pages_sha256": {
+      "description": "SHA-256 of the pages file as written, hex-encoded lowercase. Detects truncation and corruption; it is NOT an authenticity control, since anyone who can rewrite the pages file can rewrite this hash beside it. Verify single-pass — feed the decompressor and the digest from one reader and commit nothing downstream until the digest matches at EOF. Hashing the file, closing it, then reopening to parse is a TOCTOU.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "not": { "pattern": "[\\n\\r]" }
+    },
+    "bytes_compressed": {
+      "description": "Size of the pages file on disk, for reporting and build planning. The manifest is untrusted input to the indexer (house rule 2), so this is never an allocation size; the reader streams and clamps to its own configured ceiling.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 68719476736
+    },
+    "bytes_uncompressed": {
+      "description": "Total size of the JSONL stream before compression, for reporting and build planning. Same rule as bytes_compressed: a hint, never an allocation size — a manifest can claim any size it likes while the pages file beside it is empty.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 68719476736
+    },
+    "first_fetched_at": {
+      "description": "Earliest fetched_at across the segment's records; absent when the segment is empty",
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_fetched_at": {
+      "description": "Latest fetched_at across the segment's records; absent when the segment is empty",
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

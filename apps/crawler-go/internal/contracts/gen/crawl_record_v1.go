@@ -32,7 +32,7 @@ type CrawlRecordV1 struct {
 	Links []string `json:"links" yaml:"links" mapstructure:"links"`
 
 	// Contract discriminator, always crawl_record.v1
-	Schema interface{} `json:"schema" yaml:"schema" mapstructure:"schema"`
+	Schema string `json:"schema" yaml:"schema" mapstructure:"schema"`
 
 	// 64-bit SimHash of the extracted text, hex-encoded (16 chars). Absent until P2.
 	Simhash64 *string `json:"simhash64,omitempty,omitzero" yaml:"simhash64,omitempty" mapstructure:"simhash64,omitempty"`

@@ -20,6 +20,7 @@
   "properties": {
     "schema": {
       "description": "Contract discriminator, always crawl_record.v1",
+      "type": "string",
       "const": "crawl_record.v1"
     },
     "vertical": {

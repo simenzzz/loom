@@ -11,4 +11,9 @@ title_weight = 2.5
 body_weight = 1.0
 code_weight = 0.8
 anchor_weight = 1.5
-recency_half_life_days = 0 # docs don't decay; news packs set this
+recency_half_life_days = 0.0 # docs don't decay; news packs set this
+
+# BM25 constants live here, not in Rust — tuning ranking must never need a
+# code change. Robertson/Walker defaults; any change needs an eval line.
+bm25_k1 = 1.2
+bm25_b = 0.75

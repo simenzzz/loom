@@ -104,6 +104,7 @@ pub mod error {
 #[doc = "    },"]
 #[doc = "    \"schema\": {"]
 #[doc = "      \"description\": \"Contract discriminator, always search_response.v1\","]
+#[doc = "      \"type\": \"string\","]
 #[doc = "      \"const\": \"search_response.v1\""]
 #[doc = "    },"]
 #[doc = "    \"suggestion\": {"]
@@ -153,7 +154,7 @@ pub struct SearchResponseV1 {
     #[doc = "Ranked results, best first"]
     pub results: ::std::vec::Vec<SearchResponseV1ResultsItem>,
     #[doc = "Contract discriminator, always search_response.v1"]
-    pub schema: ::serde_json::Value,
+    pub schema: ::std::string::String,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub suggestion: ::std::option::Option<SearchResponseV1Suggestion>,
     #[doc = "Server-side query latency in milliseconds"]
@@ -707,7 +708,7 @@ pub mod builder {
             ::std::vec::Vec<super::SearchResponseV1ResultsItem>,
             ::std::string::String,
         >,
-        schema: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        schema: ::std::result::Result<::std::string::String, ::std::string::String>,
         suggestion: ::std::result::Result<
             ::std::option::Option<super::SearchResponseV1Suggestion>,
             ::std::string::String,
@@ -763,7 +764,7 @@ pub mod builder {
         }
         pub fn schema<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<::std::string::String>,
             T::Error: ::std::fmt::Display,
         {
             self.schema = value

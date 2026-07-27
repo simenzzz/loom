@@ -12,11 +12,37 @@ fn fixtures_root() -> PathBuf {
 }
 
 fn contract_for(dir_name: &str) -> Contract {
-    match dir_name {
-        "crawl_record.v1" => Contract::CrawlRecordV1,
-        "search_request.v1" => Contract::SearchRequestV1,
-        "search_response.v1" => Contract::SearchResponseV1,
-        other => panic!("fixture dir {other} has no Contract mapping — add it to contract_for"),
+    Contract::from_name(dir_name).unwrap_or_else(|| {
+        panic!("fixture dir {dir_name} has no Contract — add it to Contract::ALL")
+    })
+}
+
+/// The corpus test walks fixture dirs and maps them to contracts. Nothing
+/// walked the other way, so a contract added without a fixture directory had
+/// zero coverage while every suite stayed green.
+#[test]
+fn every_contract_has_fixtures() {
+    for contract in Contract::ALL {
+        for kind in ["valid", "invalid"] {
+            let dir = fixtures_root().join(contract.name()).join(kind);
+            assert!(
+                dir.is_dir(),
+                "{} has no {kind}/ fixture corpus at {dir:?}",
+                contract.name()
+            );
+        }
+    }
+}
+
+/// `validator()` indexes VALIDATORS by discriminant, so a reordered ALL would
+/// silently hand back the wrong schema rather than failing to compile.
+#[test]
+fn all_matches_discriminant_order() {
+    for (i, contract) in Contract::ALL.iter().enumerate() {
+        assert_eq!(
+            *contract as usize, i,
+            "Contract::ALL is not discriminant-ordered"
+        );
     }
 }
 
@@ -73,4 +99,33 @@ fn generated_types_roundtrip_valid_fixtures() {
         serde_json::from_str(&raw).expect("generated type parses valid fixture");
     let back = serde_json::to_value(&record).expect("serializes");
     validate(Contract::CrawlRecordV1, &back).expect("roundtrip stays contract-valid");
+}
+
+/// The schema layer accepting a document does not prove the generated struct
+/// does. These two are the first contracts with deeply nested objects and
+/// optional fields — where a typify mismatch would actually show up.
+#[test]
+fn nested_generated_types_roundtrip_valid_fixtures() {
+    use loom_contracts::generated::{segment_manifest_v1, vertical_pack_v1};
+
+    let root = fixtures_root();
+    for name in ["minimal", "full"] {
+        let raw = fs::read_to_string(root.join(format!("segment_manifest.v1/valid/{name}.json")))
+            .expect("fixture readable");
+        let doc: segment_manifest_v1::SegmentManifestV1 =
+            serde_json::from_str(&raw).expect("generated type parses valid fixture");
+        let back = serde_json::to_value(&doc).expect("serializes");
+        validate(Contract::SegmentManifestV1, &back).expect("roundtrip stays contract-valid");
+    }
+
+    // minimal.json omits url_filters — the only optional object in the pack,
+    // and therefore the only Option<..> branch in the generated type.
+    for name in ["devdocs", "minimal", "fixture-override"] {
+        let raw = fs::read_to_string(root.join(format!("vertical_pack.v1/valid/{name}.json")))
+            .expect("fixture readable");
+        let doc: vertical_pack_v1::VerticalPackV1 =
+            serde_json::from_str(&raw).expect("generated type parses valid fixture");
+        let back = serde_json::to_value(&doc).expect("serializes");
+        validate(Contract::VerticalPackV1, &back).expect("roundtrip stays contract-valid");
+    }
 }

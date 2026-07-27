@@ -15,7 +15,7 @@ type SearchRequestV1 struct {
 	Query string `json:"query" yaml:"query" mapstructure:"query"`
 
 	// Contract discriminator, always search_request.v1
-	Schema interface{} `json:"schema" yaml:"schema" mapstructure:"schema"`
+	Schema string `json:"schema" yaml:"schema" mapstructure:"schema"`
 
 	// Vertical pack id to search (defaults to devdocs)
 	Vertical string `json:"vertical,omitempty,omitzero" yaml:"vertical,omitempty" mapstructure:"vertical,omitempty"`

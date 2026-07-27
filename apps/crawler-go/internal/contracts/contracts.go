@@ -19,9 +19,11 @@ var schemaFS embed.FS
 type Name string
 
 const (
-	CrawlRecordV1    Name = "crawl_record.v1"
-	SearchRequestV1  Name = "search_request.v1"
-	SearchResponseV1 Name = "search_response.v1"
+	CrawlRecordV1     Name = "crawl_record.v1"
+	SearchRequestV1   Name = "search_request.v1"
+	SearchResponseV1  Name = "search_response.v1"
+	SegmentManifestV1 Name = "segment_manifest.v1"
+	VerticalPackV1    Name = "vertical_pack.v1"
 )
 
 var (

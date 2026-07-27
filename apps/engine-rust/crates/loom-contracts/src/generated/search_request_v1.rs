@@ -66,6 +66,7 @@ pub mod error {
 #[doc = "    },"]
 #[doc = "    \"schema\": {"]
 #[doc = "      \"description\": \"Contract discriminator, always search_request.v1\","]
+#[doc = "      \"type\": \"string\","]
 #[doc = "      \"const\": \"search_request.v1\""]
 #[doc = "    },"]
 #[doc = "    \"vertical\": {"]
@@ -93,7 +94,7 @@ pub struct SearchRequestV1 {
     #[doc = "User query string"]
     pub query: SearchRequestV1Query,
     #[doc = "Contract discriminator, always search_request.v1"]
-    pub schema: ::serde_json::Value,
+    pub schema: ::std::string::String,
     #[doc = "Vertical pack id to search (defaults to devdocs)"]
     #[serde(default = "defaults::search_request_v1_vertical")]
     pub vertical: SearchRequestV1Vertical,
@@ -268,7 +269,7 @@ pub mod builder {
         limit: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
         offset: ::std::result::Result<i64, ::std::string::String>,
         query: ::std::result::Result<super::SearchRequestV1Query, ::std::string::String>,
-        schema: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        schema: ::std::result::Result<::std::string::String, ::std::string::String>,
         vertical: ::std::result::Result<super::SearchRequestV1Vertical, ::std::string::String>,
     }
     impl ::std::default::Default for SearchRequestV1 {
@@ -315,7 +316,7 @@ pub mod builder {
         }
         pub fn schema<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<::std::string::String>,
             T::Error: ::std::fmt::Display,
         {
             self.schema = value

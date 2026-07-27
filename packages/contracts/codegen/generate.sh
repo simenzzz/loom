@@ -34,6 +34,10 @@ need npx "npm ci in packages/contracts/codegen"
 need cargo-typify "cargo install cargo-typify --locked --version $CARGO_TYPIFY_VERSION (or: make setup-codegen)"
 [[ -x "$GOJSONSCHEMA" ]] || { echo "ERROR: missing $GOJSONSCHEMA (go install $GO_JSONSCHEMA_MODULE@$GO_JSONSCHEMA_VERSION, or: make setup-codegen)" >&2; exit 1; }
 [[ -x "$DATAMODEL_CODEGEN" ]] || { echo "ERROR: missing $DATAMODEL_CODEGEN (make setup-codegen)" >&2; exit 1; }
+# `command -v rustfmt` succeeds even when the component is absent — rustup
+# ships a proxy that fails only on invocation. Probe the real thing.
+rustfmt --version >/dev/null 2>&1 || {
+  echo "ERROR: rustfmt unavailable (rustup component add rustfmt)" >&2; exit 1; }
 
 # Refuse to generate with a drifted toolchain — output differs across versions
 actual_typify="$(cargo-typify --help >/dev/null 2>&1; cargo typify --version 2>/dev/null | awk '{print $2}')"
@@ -91,6 +95,16 @@ for f in "${schema_files[@]}"; do
   base="$(basename "$f" .schema.json)"
   mod="$(echo "$base" | tr '.' '_')"             # crawl_record_v1
   cargo-typify typify "$f" --output "$RS_OUT/${mod}.rs" >/dev/null
+  # typify's own formatting is not rustfmt-clean for deeply nested generic
+  # bounds (builder setters over Option<DateTime> / Vec<NestedItem>), and
+  # `cargo fmt --check` gates CI. Normalize here so the committed output is
+  # both generated and fmt-clean; never hand-edit it to achieve this.
+  #
+  # CAVEAT: rustfmt is the one tool here NOT pinned by versions.env — CI floats
+  # on stable. Style edition 2024 carries a formatting-stability guarantee, so
+  # the risk is low, but if the drift gate ever fails with no schema change,
+  # suspect a rustfmt release before you suspect the schemas.
+  rustfmt --edition 2024 "$RS_OUT/${mod}.rs"
   rs_mods+=("$mod")
 done
 {

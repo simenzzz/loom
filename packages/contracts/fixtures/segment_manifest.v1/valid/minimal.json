@@ -1,0 +1,12 @@
+{
+  "schema": "segment_manifest.v1",
+  "vertical": "devdocs",
+  "segment_id": "seg-20260726t150405z-0001",
+  "created_at": "2026-07-26T15:04:05Z",
+  "crawler_version": "0.1.0",
+  "record_count": 0,
+  "pages_file": "pages.jsonl.zst",
+  "pages_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "bytes_compressed": 0,
+  "bytes_uncompressed": 0
+}

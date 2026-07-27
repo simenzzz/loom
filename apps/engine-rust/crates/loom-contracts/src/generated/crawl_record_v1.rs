@@ -102,6 +102,7 @@ pub mod error {
 #[doc = "    },"]
 #[doc = "    \"schema\": {"]
 #[doc = "      \"description\": \"Contract discriminator, always crawl_record.v1\","]
+#[doc = "      \"type\": \"string\","]
 #[doc = "      \"const\": \"crawl_record.v1\""]
 #[doc = "    },"]
 #[doc = "    \"simhash64\": {"]
@@ -156,7 +157,7 @@ pub struct CrawlRecordV1 {
     #[doc = "Outbound links discovered on the page, canonicalized"]
     pub links: ::std::vec::Vec<CrawlRecordV1LinksItem>,
     #[doc = "Contract discriminator, always crawl_record.v1"]
-    pub schema: ::serde_json::Value,
+    pub schema: ::std::string::String,
     #[doc = "64-bit SimHash of the extracted text, hex-encoded (16 chars). Absent until P2."]
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub simhash64: ::std::option::Option<CrawlRecordV1Simhash64>,
@@ -779,7 +780,7 @@ pub mod builder {
             ::std::vec::Vec<super::CrawlRecordV1LinksItem>,
             ::std::string::String,
         >,
-        schema: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        schema: ::std::result::Result<::std::string::String, ::std::string::String>,
         simhash64: ::std::result::Result<
             ::std::option::Option<super::CrawlRecordV1Simhash64>,
             ::std::string::String,
@@ -890,7 +891,7 @@ pub mod builder {
         }
         pub fn schema<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<::std::string::String>,
             T::Error: ::std::fmt::Display,
         {
             self.schema = value

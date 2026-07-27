@@ -16,7 +16,7 @@ type SearchResponseV1 struct {
 	Results []SearchResponseV1ResultsElem `json:"results" yaml:"results" mapstructure:"results"`
 
 	// Contract discriminator, always search_response.v1
-	Schema interface{} `json:"schema" yaml:"schema" mapstructure:"schema"`
+	Schema string `json:"schema" yaml:"schema" mapstructure:"schema"`
 
 	// Optional did-you-mean rewrite when the query looks misspelled (P4)
 	Suggestion *SearchResponseV1Suggestion `json:"suggestion,omitempty,omitzero" yaml:"suggestion,omitempty" mapstructure:"suggestion,omitempty"`

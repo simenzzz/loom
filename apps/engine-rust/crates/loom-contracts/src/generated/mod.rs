@@ -5,3 +5,7 @@ pub mod crawl_record_v1;
 pub mod search_request_v1;
 #[allow(clippy::unwrap_used)]
 pub mod search_response_v1;
+#[allow(clippy::unwrap_used)]
+pub mod segment_manifest_v1;
+#[allow(clippy::unwrap_used)]
+pub mod vertical_pack_v1;

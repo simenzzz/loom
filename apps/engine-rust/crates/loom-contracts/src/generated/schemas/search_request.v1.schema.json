@@ -9,6 +9,7 @@
   "properties": {
     "schema": {
       "description": "Contract discriminator, always search_request.v1",
+      "type": "string",
       "const": "search_request.v1"
     },
     "query": {

@@ -17,15 +17,37 @@ pub enum Contract {
     CrawlRecordV1,
     SearchRequestV1,
     SearchResponseV1,
+    SegmentManifestV1,
+    VerticalPackV1,
 }
 
 impl Contract {
+    /// Every contract known to this build, in discriminant order.
+    ///
+    /// This is the single list a new contract is added to; [`Contract::validator`]
+    /// indexes into a parallel array using the discriminant, and the
+    /// `all_matches_discriminant_order` test pins the two together.
+    pub const ALL: &'static [Contract] = &[
+        Contract::CrawlRecordV1,
+        Contract::SearchRequestV1,
+        Contract::SearchResponseV1,
+        Contract::SegmentManifestV1,
+        Contract::VerticalPackV1,
+    ];
+
+    /// Resolves a `schema` discriminator string to its contract.
+    pub fn from_name(name: &str) -> Option<Self> {
+        Self::ALL.iter().copied().find(|c| c.name() == name)
+    }
+
     /// Contract name as it appears in `schema` discriminator fields.
     pub fn name(self) -> &'static str {
         match self {
             Contract::CrawlRecordV1 => "crawl_record.v1",
             Contract::SearchRequestV1 => "search_request.v1",
             Contract::SearchResponseV1 => "search_response.v1",
+            Contract::SegmentManifestV1 => "segment_manifest.v1",
+            Contract::VerticalPackV1 => "vertical_pack.v1",
         }
     }
 
@@ -40,17 +62,21 @@ impl Contract {
             Contract::SearchResponseV1 => {
                 include_str!("generated/schemas/search_response.v1.schema.json")
             }
+            Contract::SegmentManifestV1 => {
+                include_str!("generated/schemas/segment_manifest.v1.schema.json")
+            }
+            Contract::VerticalPackV1 => {
+                include_str!("generated/schemas/vertical_pack.v1.schema.json")
+            }
         }
     }
 
     fn validator(self) -> &'static Validator {
-        static VALIDATORS: [OnceLock<Validator>; 3] =
-            [OnceLock::new(), OnceLock::new(), OnceLock::new()];
-        let slot = match self {
-            Contract::CrawlRecordV1 => &VALIDATORS[0],
-            Contract::SearchRequestV1 => &VALIDATORS[1],
-            Contract::SearchResponseV1 => &VALIDATORS[2],
-        };
+        static VALIDATORS: [OnceLock<Validator>; Contract::ALL.len()] =
+            [const { OnceLock::new() }; Contract::ALL.len()];
+        // Sound because Contract is fieldless and ALL is discriminant-ordered
+        // (pinned by all_matches_discriminant_order).
+        let slot = &VALIDATORS[self as usize];
         slot.get_or_init(|| {
             let schema: Value = serde_json::from_str(self.raw_schema())
                 .expect("embedded schema is valid JSON (checked by codegen)");

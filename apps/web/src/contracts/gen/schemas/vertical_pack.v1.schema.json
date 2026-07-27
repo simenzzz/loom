@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://loom.dev/schemas/vertical_pack.v1.schema.json",
+  "title": "VerticalPackV1",
+  "description": "A vertical pack as the loader sees it: pack.toml, policy.toml, extract.toml and seeds.txt merged into one document. The Go crawler validates what it parsed; the Rust ranker reads the same shape for field weights. Adding a vertical must never require a code change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "pack",
+    "ranking",
+    "limits",
+    "politeness",
+    "hosts",
+    "content",
+    "code",
+    "seeds"
+  ],
+  "properties": {
+    "schema": {
+      "description": "Contract discriminator, always vertical_pack.v1",
+      "type": "string",
+      "const": "vertical_pack.v1"
+    },
+    "pack": {
+      "description": "Pack identity, from pack.toml [pack]",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "tab_label"],
+      "properties": {
+        "id": {
+          "description": "Vertical id; matches the directory name under verticals/ and the vertical field on every downstream document",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "name": {
+          "description": "Human-readable pack name",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "tab_label": {
+          "description": "Short label for the vertical tab in the web UI",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        }
+      }
+    },
+    "ranking": {
+      "description": "Ranking parameters, from pack.toml [ranking]. Field weights apply from P5; the BM25 constants are read from P1 onward so no scoring constant is hardcoded in Rust.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title_weight",
+        "body_weight",
+        "code_weight",
+        "anchor_weight",
+        "recency_half_life_days",
+        "bm25_k1",
+        "bm25_b"
+      ],
+      "properties": {
+        "title_weight": {
+          "description": "BM25F weight of the title field",
+          "type": "number",
+          "minimum": 0
+        },
+        "body_weight": {
+          "description": "BM25F weight of the body field",
+          "type": "number",
+          "minimum": 0
+        },
+        "code_weight": {
+          "description": "BM25F weight of the code-block field",
+          "type": "number",
+          "minimum": 0
+        },
+        "anchor_weight": {
+          "description": "BM25F weight of the inbound anchor-text field",
+          "type": "number",
+          "minimum": 0
+        },
+        "recency_half_life_days": {
+          "description": "Half-life of the recency decay in days; 0 disables decay, as documentation corpora require",
+          "type": "number",
+          "minimum": 0
+        },
+        "bm25_k1": {
+          "description": "BM25 term-frequency saturation parameter, conventionally 1.2",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 1.2
+        },
+        "bm25_b": {
+          "description": "BM25 length-normalization parameter in [0,1], conventionally 0.75",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.75
+        }
+      }
+    },
+    "limits": {
+      "description": "Hard crawl limits, from policy.toml [limits]. The crawler enforces every one of these; nothing is best-effort.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_pages", "max_depth", "max_body_bytes"],
+      "properties": {
+        "max_pages": {
+          "description": "Maximum pages to fetch in one crawl. Bounded above because max_depth is only a meaningful ceiling while this one is: an unbounded page budget makes a depth cap decorative.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "max_depth": {
+          "description": "Maximum link depth from a seed; bounded by crawl_record.v1's depth ceiling",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "max_body_bytes": {
+          "description": "Response body size cap; larger bodies are truncated, never buffered whole. Bounded above at 128 MiB because a cap with no ceiling is not a cap — and because the fetcher must never size a buffer from it.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 134217728
+        }
+      }
+    },
+    "politeness": {
+      "description": "Politeness policy, from policy.toml [politeness]",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_rps_per_host", "respect_robots", "respect_crawl_delay"],
+      "properties": {
+        "default_rps_per_host": {
+          "description": "Default request rate per host when robots.txt states no crawl-delay",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "respect_robots": {
+          "description": "Whether robots.txt disallow rules are honored. The schema cannot enforce when false is legitimate, so the loader must: refuse false unless every hosts.allowed entry is loopback or the LOOM_FIXTURE_SITE_BASE origin, and log at WARN when it is honored. Setting this false against a third party's host is not a configuration choice, it is a defect.",
+          "type": "boolean"
+        },
+        "respect_crawl_delay": {
+          "description": "Whether a robots.txt Crawl-delay overrides default_rps_per_host when it is more conservative",
+          "type": "boolean"
+        }
+      }
+    },
+    "hosts": {
+      "description": "Host allowlist, from policy.toml [hosts]",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed"],
+      "properties": {
+        "allowed": {
+          "description": "Hosts the frontier may fetch; everything else is dropped. Bare names are permitted so the fixture site (localhost, or the compose service name) is expressible. This list is a NAME allowlist and is not by itself an SSRF control: DNS can point an allowed name at a private address, and redirects leave the allowed host after the check. The fetcher must additionally reject post-resolution addresses in loopback, link-local, private, CGNAT and IPv4-mapped-v6 ranges, connect to the validated IP rather than re-resolving, and re-run both checks on every redirect hop. Entries carry no port, so allowlisting a host authorizes every port on it — the runtime matcher must compare host and port.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 253,
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$"
+          }
+        }
+      }
+    },
+    "url_filters": {
+      "description": "URL rejection rules, from policy.toml [url_filters]. Absent means no substring filtering.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deny_contains"],
+      "properties": {
+        "deny_contains": {
+          "description": "Drop any URL containing one of these substrings",
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "content": {
+      "description": "Main-content extraction hints, from extract.toml [content]. Applied on top of the generic text-density algorithm from P3.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["main_selectors", "title_selectors"],
+      "properties": {
+        "main_selectors": {
+          "description": "Selectors that narrow where the main content lives, most specific first",
+          "type": "array",
+          "maxItems": 64,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        },
+        "title_selectors": {
+          "description": "Selectors consulted in order to find the document title",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        }
+      }
+    },
+    "code": {
+      "description": "Code-block extraction hints, from extract.toml [code]",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preserve_selectors"],
+      "properties": {
+        "preserve_selectors": {
+          "description": "Selectors whose contents are indexed as the separate code field rather than body text",
+          "type": "array",
+          "maxItems": 64,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        }
+      }
+    },
+    "seeds": {
+      "description": "Crawl seeds, from seeds.txt with comments and blank lines removed. Seeds are depth 0, which means they enter the frontier as its initial contents. THE SCHEMA CANNOT BIND THEM TO hosts.allowed — that is a cross-field rule, so the loader MUST re-check every seed's host against hosts.allowed and reject the pack otherwise. Treat a seed as untrusted input, not as pre-authorized because it came from config.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": {
+        "description": "An http(s) seed URL. The authority may not contain userinfo: 'https://docs.python.org@169.254.169.254/' parses as a request to 169.254.169.254 while reading as docs.python.org to a human, which is the classic allowlist bypass.",
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https?://[a-zA-Z0-9._~%!$&'()*+,;=:\\[\\]-]+([/?#]|$)",
+        "maxLength": 4096
+      }
+    }
+  }
+}

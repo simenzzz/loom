@@ -9,6 +9,8 @@ import addFormats from 'ajv-formats'
 import crawlRecordV1 from '../contracts/gen/schemas/crawl_record.v1.schema.json'
 import searchRequestV1 from '../contracts/gen/schemas/search_request.v1.schema.json'
 import searchResponseV1 from '../contracts/gen/schemas/search_response.v1.schema.json'
+import segmentManifestV1 from '../contracts/gen/schemas/segment_manifest.v1.schema.json'
+import verticalPackV1 from '../contracts/gen/schemas/vertical_pack.v1.schema.json'
 import type { SearchResponseV1 } from '../contracts/gen/search_response.v1'
 
 const ajv = new Ajv2020({ allErrors: true })
@@ -18,6 +20,8 @@ const validators: Record<string, ValidateFunction> = {
   'crawl_record.v1': ajv.compile(crawlRecordV1),
   'search_request.v1': ajv.compile(searchRequestV1),
   'search_response.v1': ajv.compile(searchResponseV1),
+  'segment_manifest.v1': ajv.compile(segmentManifestV1),
+  'vertical_pack.v1': ajv.compile(verticalPackV1),
 }
 
 export class ContractViolation extends Error {

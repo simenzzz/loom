@@ -18,6 +18,10 @@ jobs:
         with:
           go-version: "1.25"
       - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+        with:
+          # generate.sh normalizes typify output with rustfmt; this action
+          # installs the minimal profile, which excludes it.
+          components: rustfmt
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
