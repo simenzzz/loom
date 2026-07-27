@@ -30,8 +30,8 @@ func (s *Server) Handler() http.Handler {
 func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := map[string]any{
-		"service": "crawler-go",
-		"status":  "ok",
+		"service":  "crawler-go",
+		"status":   "ok",
 		"uptime_s": int(time.Since(s.started).Seconds()),
 	}
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
