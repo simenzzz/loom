@@ -106,7 +106,7 @@ class Politeness(BaseModel):
     )
     respect_robots: bool = Field(
         ...,
-        description="Whether robots.txt disallow rules are honored. The schema cannot enforce when false is legitimate, so the loader must: refuse false unless every hosts.allowed entry is loopback or the LOOM_FIXTURE_SITE_BASE origin, and log at WARN when it is honored. Setting this false against a third party's host is not a configuration choice, it is a defect.",
+        description="Whether robots.txt disallow rules are honored. The schema cannot tell a legitimate false from a dangerous one, because the answer depends on hosts.allowed, so the loader refuses false unless EVERY allowed host is loopback, and the CLI logs at WARN whenever a pack loads with it false. Note this is narrower than a compose fixture needs — the fixture host there is a service name, not loopback — which is deliberate while no pack in the tree sets it false. Setting this false against a third party's host is not a configuration choice, it is a defect.",
     )
     respect_crawl_delay: bool = Field(
         ...,
